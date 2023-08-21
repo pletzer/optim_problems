@@ -1,0 +1,13 @@
+#!jinja2
+{% set NPOINTS = 10 %}
+[task parameters]
+  I = 1..{{ NPOINTS }}
+[scheduling]
+  [[graph]]
+    R1 = """
+         produce_init_guess => optimize_position<I> => compute_objfun
+         """
+[runtime]
+  [[produce_init_guess]]
+  [[optimize_position<I>]]
+  [[compute_objfun]]
