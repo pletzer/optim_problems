@@ -4,24 +4,7 @@ import defopt
 import utils
 
 
-def objfun(uvs, uv_ref):
-
-    xyz = utils.compute_coords(uvs)
-    xyz_ref = utils.compute_coords(uv_ref).squeeze()
-
-    print(xyz)
-
-    n = uvs.shape[0]
-    res = 0.
-    for i in range(n):
-        dx = xyz[i, 0] - xyz_ref[0]
-        dy = xyz[i, 1] - xyz_ref[1]
-        dz = xyz[i, 2] - xyz_ref[2]
-        res += 1.0/numpy.sqrt(dx*dx + dy*dy + dz*dz)
-    return res/n
-
-
-def distancesSquare(uvs, uv_ref):
+def distancesSquare(uv_ref, uvs):
 
     xyz = utils.compute_coords(uvs)
     xyz_ref = utils.compute_coords(uv_ref).squeeze()
@@ -34,6 +17,11 @@ def distancesSquare(uvs, uv_ref):
         res[i] = dx*dx + dy*dy + dz*dz
 
     return res
+
+
+def objfun(uv_ref, uvs):
+
+    return distancesSquare(uv_ref, uvs).sum()
 
 
 def main(*, input: str='points.npy', index: int=0, nnear: int=3, output: str=f'point.npy'):
@@ -49,16 +37,19 @@ def main(*, input: str='points.npy', index: int=0, nnear: int=3, output: str=f'p
 
     # extract the point of interest
     uv_ref = uvs[index, :]
+    print(f'reference point is: {uv_ref}')
 
     # find the nnear nearest points
-    scores = distancesSquare(uvs, uv_ref)
+    scores = distancesSquare(uv_ref, uvs)
     inds = numpy.argsort(scores)
-    uv_subset = uvs[inds[1:(nnear + 1)], :]
+    uv_neighbours = uvs[inds[1:(nnear + 1)], :]
+    print(f'{nnear} nearest points are:\n{uv_neighbours}')
 
     # optimize the location of the point using its vicinity
-    res = minimize(objfun, uv_subset, args=(uv_ref,), method='L-BFGS-B', options={'maxiter': 100, 'maxfun': 1000})
+    res = minimize(objfun, uv_ref, args=(uv_neighbours,), method='L-BFGS-B', options={'maxiter': 100, 'maxfun': 1000})
 
-    # save the point's coordinates
+    # save the new point's coordinates
+    print(f'new coords: {res.x}')
     numpy.save(output, res.x)
 
 
