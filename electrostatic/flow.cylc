@@ -1,13 +1,18 @@
 #!jinja2
 {% set NPOINTS = 10 %}
+{% set SEED = 123 %}
+{% set NNEAREST = 3 %}
 [task parameters]
-  I = 1..{{ NPOINTS }}
+  i = 1..{{ NPOINTS }}
 [scheduling]
   [[graph]]
     R1 = """
-         produce_init_guess => optimize_position<I> => compute_objfun
+         produce_init_guess => optimize_position<i> => compute_objfun
          """
 [runtime]
   [[produce_init_guess]]
+    script = python produce_init_guess.py --seed={{ SEED }} --n={{ NPOINTS }} --output=points.npy
   [[optimize_position<I>]]
-  [[compute_objfun]]
+    script = python optimize_position.py --index=${CYLC_TASK_PARAM_i} --input=points.npy --nnear={{ NNEAREST }} --output=newpoint${CYLC_TASK_PARAM_i}.npy
+  [[compute_objfun]
+    script = python compute_objfun.py --input=points.npy --output=objfun.npy
