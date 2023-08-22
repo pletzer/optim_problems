@@ -9,6 +9,8 @@ def objfun(uvs, uv_ref):
     xyz = utils.compute_coords(uvs)
     xyz_ref = utils.compute_coords(uv_ref).squeeze()
 
+    print(xyz)
+
     n = uvs.shape[0]
     res = 0.
     for i in range(n):
