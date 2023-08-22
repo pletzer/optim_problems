@@ -1,18 +1,44 @@
 #!jinja2
 {% set NPOINTS = 10 %}
 {% set SEED = 123 %}
-{% set NNEAREST = 3 %}
+{% set NNEAR = 3 %}
 [task parameters]
-  i = 1..{{ NPOINTS }}
+  i = 0..{{ NPOINTS - 1}}
 [scheduling]
   [[graph]]
     R1 = """
-         produce_init_guess => optimize_position<i> => compute_objfun
+         produce_init_guess => optimize_position<i> => gather_points => compute_objfun
          """
 [runtime]
+  [[root]]
+    [[[environment]]]
+      PYTHON_EXE = /Users/pletzera/miniconda3/envs/cylc/bin/python
   [[produce_init_guess]]
-    script = python produce_init_guess.py --seed={{ SEED }} --n={{ NPOINTS }} --output=points.npy
-  [[optimize_position<I>]]
-    script = python optimize_position.py --index=${CYLC_TASK_PARAM_i} --input=points.npy --nnear={{ NNEAREST }} --output=newpoint${CYLC_TASK_PARAM_i}.npy
-  [[compute_objfun]
-    script = python compute_objfun.py --input=points.npy --output=objfun.npy
+    script = """
+     echo $CYLC_WORKFLOW_RUN_DIR
+     $PYTHON_EXE $CYLC_WORKFLOW_RUN_DIR/produce_init_guess.py \
+                 --seed={{ SEED }} \
+                 --n={{ NPOINTS }} \
+                 --output=$CYLC_WORKFLOW_RUN_DIR/points.npy
+             """
+  [[optimize_position<i>]]
+    script = """
+     $PYTHON_EXE $CYLC_WORKFLOW_RUN_DIR/optimize_position.py \
+                                 --index=${CYLC_TASK_PARAM_i} \
+                                 --input=$CYLC_WORKFLOW_RUN_DIR/points.npy \
+                                 --nnear={{ NNEAR }} \
+                                 --output=$CYLC_WORKFLOW_RUN_DIR/newpoint${CYLC_TASK_PARAM_i}.npy
+             """
+  [[gather_points]]
+    script = """
+     $PYTHON_EXE $CYLC_WORKFLOW_RUN_DIR/gather_points.py \
+                             --n={{ NPOINTS }}  \
+                             --input="$CYLC_WORKFLOW_RUN_DIR/newpoint*.npy" \
+                             --output=$CYLC_WORKFLOW_RUN_DIR/points.npy
+             """
+  [[compute_objfun]]
+    script = """
+     $PYTHON_EXE $CYLC_WORKFLOW_RUN_DIR/compute_objfun.py \
+                            --input=$CYLC_WORKFLOW_RUN_DIR/points.npy \
+                            --output=$CYLC_WORKFLOW_RUN_DIR/objfun.npy
+             """
