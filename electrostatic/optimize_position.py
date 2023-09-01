@@ -26,7 +26,7 @@ def objfun(uv_ref, uvs):
 
 def main(*, input: str='points.npy', index: int=0, nnear: int=3, output: str=f'point.npy'):
     """
-    Optimize the location of a point
+    Optimize the location of a point by minimizing the sum of the distance^2 from the point to its neighbours
     :param input: input file containing the point's positions
     :param index: the index of thepoint to move
     :param nnear: the number of nearest points used

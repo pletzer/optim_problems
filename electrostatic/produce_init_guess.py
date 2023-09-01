@@ -3,7 +3,7 @@ import defopt
 
 def main(*, n: int=10, seed: int=123, output: str='points.npy'):
     """
-    Produce random initial positions
+    Produce random initial positions in parametric space
     :param n: number of points
     :param seed: random number generator seed
     :param output: output file

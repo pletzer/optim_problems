@@ -1,0 +1,33 @@
+[scheduler]
+    allow implicit tasks = True
+[scheduling]
+    cycling mode = integer
+    [[graph]]
+        R1 = """
+            init => eval
+        """
+        P1 = """
+            next[-P1]:succeed? => eval => next?
+            next:fail? => finish
+        """
+[runtime]
+    [[root]]
+      [[[environment]]]
+        PYTHON_BINDIR = /Users/pletzera/miniconda3/envs/pyaos-lesson/bin
+    [[init]]
+        script = """
+        $PYTHON_BINDIR/python obj_fun.py init -i 0. -o params.npy
+        """
+    [[eval]]
+        script="""
+        $PYTHON_BINDIR/python obj_fun.py eval -f obj.pickle -p params.npy -o f.npy
+        """
+    [[next]]
+        script = """
+        $PYTHON_BINDIR/python obj_fun.py next -f obj.pickle -p params.npy -o params.npy
+        """
+    [[finish]]
+        script = """
+        $PYTHON_BINDIR/python obj_fun.py print -p params.npy
+        """
+
