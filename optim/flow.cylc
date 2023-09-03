@@ -4,30 +4,30 @@
     cycling mode = integer
     [[graph]]
         R1 = """
-            initialize => evaluate
+            initialize => update?
         """
         P1 = """
-            update[-P1]:succeed? => evaluate => update?
+            update[-P1]:succeed? => update?
             update:fail? => finish
         """
 [runtime]
     [[root]]
       [[[environment]]]
+        SRC_DIR = /Users/pletzera/optim_problems/optim
+        RUN_DIR = /Users/pletzera/optim_problems/optim
         PYTHON_BINDIR = /Users/pletzera/miniconda3/envs/pyaos-lesson/bin
     [[initialize]]
         script = """
-        $PYTHON_BINDIR/python obj_fun.py initialize -i 0. -o params.npy
-        """
-    [[evaluate]]
-        script="""
-        $PYTHON_BINDIR/python obj_fun.py evaluate -f obj.pickle -p params.npy -o f.npy
+        $PYTHON_BINDIR/python $SRC_DIR/objfun.py initialize -a 1. -b 2. -t 1.e-3 -p 0. -o $RUN_DIR/params.npy -f $RUN_DIR/obj.pickle
         """
     [[update]]
         script = """
-        $PYTHON_BINDIR/python obj_fun.py update -f obj.pickle -p params.npy -o params.npy
+        $PYTHON_BINDIR/python $SRC_DIR/objfun.py update -f $RUN_DIR/obj.pickle -g 0.5 -p $RUN_DIR/params.npy -o $RUN_DIR/params.npy
         """
     [[finish]]
         script = """
-        $PYTHON_BINDIR/python obj_fun.py display -p params.npy
+        $PYTHON_BINDIR/python $SRC_DIR/objfun.py display -p $RUN_DIR/params.npy
         """
+
+
 

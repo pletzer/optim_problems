@@ -65,29 +65,26 @@ def evaluate(*, fun_file: str='obj_fun.pickle', params_file: str='params.npy', o
         numpy.save(output_file, res)
 
 
-def update(*, fun_file: str='obj_fun.pickle', params_file: str='params.npy', f_file: str='f.npy', gamma: float=1.0, output_file: str='params.npy'):
+def update(*, fun_file: str='obj_fun.pickle', params_file: str='params.npy', gamma: float=1.0, output_file: str='params.npy'):
     """
     Update the parameters
     :param fun_file: objective function instance
     :param params_file: parameters file
-    :param f_file: file containing the current function evaluation
     :param gamma: update coefficient
     :param output_file: output file containing the new parameter values
-    :returns 0 if iteration ducceeded, 1 otherwise
+    :raises ValueError: if function value did not decrease
     """
     with open(fun_file, "rb") as obj_fun_file:
         obj = pickle.load(obj_fun_file)
         params = numpy.load(params_file)
-        f = numpy.load(f_file)
         print(f'current params: {params}')
+        f = obj.eval(params)
         res = obj.next(params=params, gamma=gamma)
         print(f'updated params: {res}')
         new_f = obj.eval(res)
         numpy.save(output_file, res)
-        if f - new_f < obj.tol:
-            return 1 # fail
-        else:
-            return 0 # succeed
+        if new_f > f - obj.tol:
+            raise ValueError(f'f = {f} new_f = {new_f} > f - tol = {f - obj.tol}')
 
 
 
